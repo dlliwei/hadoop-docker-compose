@@ -1,0 +1,48 @@
+50070 namenode管理界面
+8088 yarn管理界面
+8080 spark管理界面
+
+
+master容器下spark验证：
+1 用jar包执行：
+hadoop jar /root/jars/hadoop-mapreduce-examples-2.6.0-cdh5.6.0.jar wordcount hdfs://namenode:8020/input hdfs://namenode:8020/output/1
+hdfs dfs -text hdfs://namenode:8020/output/1/part*
+2 直接计算执行spark-shell：
+scala> val textFile = sc.textFile("hdfs://namenode:8020/input/WordCount.txt")  #本地文件路径用file:///  
+scala> textFile.count()
+scala> val wordCounts = textFile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey((a, b) => a + b)
+scala> wordCounts.collect() 
+3 spark-submit使用：
+./bin/spark-submit \
+  --class org.apache.spark.examples.HdfsTest \
+  --master spark://master:7077 /root/jars/spark-examples_2.11-2.4.0.jar \
+  hdfs://namenode:8020/input/WordCount.txt
+
+
+master容器下pgsql验证：
+进入pgsql：psql -h localhost -p 5432 -U postgres -W
+密码：hive
+\l
+\c 数据库名
+\d
+create table test(id int);
+insert into test values(1);
+select * from test;
+
+master容器下hive验证：
+本地模式>hive --service metastore
+
+
+嵌入式/远程连接模式：
+进入hiveserver容器（启动hiveserver2），启动beeline客户端：beeline -u jdbc:hive2://
+或只输入命令beeline，然后beeline> !connect jdbc:hive2://
+说明：如果是远程链接使用：!connect jdbc:hive2://172.19.0.13:10000
+
+
+
+
+
+
+
+
+
